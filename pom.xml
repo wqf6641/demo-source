@@ -8,6 +8,7 @@
 	<modules>
 		<module>demo-spring-mybatis</module>
 		<module>demo-springmvc</module>
+		<module>demo-thread</module>
 	</modules>
 	<dependencies>
 		<dependency>
