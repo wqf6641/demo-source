@@ -55,7 +55,7 @@ public class BlockingQueue {
 	}
 
 	public static void main(String[] args) {
-		BlockingQueue queue = new BlockingQueue(5);
+		final BlockingQueue queue = new BlockingQueue(5);
 		new Thread(new Runnable() {
 
 			@Override
