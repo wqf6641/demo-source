@@ -13,7 +13,7 @@ public class CountDownLatchTest {
 	static int threads = 200;// 线程并发数
 
 	public static void main(String[] args) throws InterruptedException {
-		final CountDownLatch latch = new CountDownLatch(threads);
+		final CountDownLatch latch = new CountDownLatch(1);
 		for (int i = 0; i < threads; i++) {
 			Thread.currentThread().setName("" + i);
 			new Thread(new Runnable() {
@@ -25,7 +25,7 @@ public class CountDownLatchTest {
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					} finally {
-						System.out.println("当前线程:" + Thread.currentThread().getName() + "等待结束, 开始模拟web用户请求， 开始时间:"
+						System.out.println("当前线程:" + Thread.currentThread().getName() + "等待结束, 开始模拟用户请求， 开始时间:"
 								+ System.currentTimeMillis());
 					}
 				}
@@ -35,9 +35,7 @@ public class CountDownLatchTest {
 		// 等待两秒，等待并发线程初始化完成。
 		Thread.sleep(2000);
 		System.out.println("主线程:" + Thread.currentThread().getName() + "countdown自减开始....");
-		for (int i = 0; i < threads; i++) {
-			latch.countDown();// 全部同时执行
-		}
+		latch.countDown();// 全部同时执行
 		System.out.println("主线程:" + Thread.currentThread().getName() + "countdown自减完成....");
 	}
 }
