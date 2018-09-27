@@ -12,7 +12,7 @@ import wqf.anntation.RequestMapping;
 import wqf.anntation.RequestParam;
 import wqf.service.DemoService;
 
-@Controller("wqf")
+@Controller("root")
 @RequestMapping("/demo")
 public class DemoController {
 

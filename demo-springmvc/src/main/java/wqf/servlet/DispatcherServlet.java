@@ -1,10 +1,18 @@
 package wqf.servlet;
 
-import wqf.anntation.Autowired;
-import wqf.anntation.Controller;
-import wqf.anntation.RequestMapping;
-import wqf.anntation.RequestParam;
-import wqf.anntation.Service;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -13,17 +21,12 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import wqf.anntation.Autowired;
+import wqf.anntation.Controller;
+import wqf.anntation.RequestMapping;
+import wqf.anntation.RequestParam;
+import wqf.anntation.Service;
 
 public class DispatcherServlet extends HttpServlet {
 	/**
@@ -34,10 +37,14 @@ public class DispatcherServlet extends HttpServlet {
 	// 所有类的实例，key是注解的value,value是所有类的实例
 	Map<String, Object> instanceMap = new HashMap<String, Object>();
 	Map<String, Object> handerMap = new HashMap<String, Object>();
+	Properties prop = new Properties();
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
-		scanPackage("wqf");
+		// 初始化配置
+		initParam(config);
+
+		scanPackage(prop.getProperty("scanPackage"));
 		try {
 			filterAndInstance();// 实例化
 		} catch (Exception e) {
@@ -49,6 +56,16 @@ public class DispatcherServlet extends HttpServlet {
 		ioc();
 	}
 
+	private void initParam(ServletConfig config) {
+		InputStream is = this.getClass().getClassLoader()
+				.getResourceAsStream(config.getServletContext().getInitParameter("contextConfigLocation"));
+		try {
+			prop.load(is);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	private void ioc() {
 		if (instanceMap.isEmpty())
 			return;
@@ -57,8 +74,9 @@ public class DispatcherServlet extends HttpServlet {
 			Field fields[] = entry.getValue().getClass().getDeclaredFields();
 			for (Field field : fields) {
 				field.setAccessible(true);// 可访问私有属性
-				if (field.isAnnotationPresent(Autowired.class))
-					;
+				if (!field.isAnnotationPresent(Autowired.class)) {
+					continue;
+				}
 				Autowired auto = field.getAnnotation(Autowired.class);
 				String value = auto.value();
 				field.setAccessible(true);
@@ -119,17 +137,26 @@ public class DispatcherServlet extends HttpServlet {
 			if (cName.isAnnotationPresent(Controller.class)) {
 				Object instance = cName.newInstance();// 实例化
 				Controller controller = (Controller) cName.getAnnotation(Controller.class);
-				String key = controller.value();// wqf
+				String key = controller.value();// root
 				instanceMap.put(key, instance);
 			} else if (cName.isAnnotationPresent(Service.class)) {
 				Object instance = cName.newInstance();
 				Service service = (Service) cName.getAnnotation(Service.class);
 				String key = service.value();// demoServiceImpl
+				if (key.equals("")) {
+					key = lowerFristCase(cName.getSimpleName());
+				}
 				instanceMap.put(key, instance);
 			} else {
 				continue;
 			}
 		}
+	}
+
+	private String lowerFristCase(String simpleName) {
+		char[] charArray = simpleName.toCharArray();
+		charArray[0] += 32;// 取巧，只适合首字母是大写的 才可以转换为小写
+		return String.valueOf(charArray);
 	}
 
 	/**
@@ -138,12 +165,13 @@ public class DispatcherServlet extends HttpServlet {
 	 * @param packageStr
 	 */
 	private void scanPackage(String packageStr) {
-		URL url = this.getClass().getClassLoader().getResource("/" + packageStr.replaceAll("\\.", "/"));
+		URL url = this.getClass().getClassLoader()
+				.getResource("/" + packageStr.replaceAll("\\.", "/").replaceAll("/+", "/"));
 		String pathFile = url.getFile();
 		File file = new File(pathFile);
 		String fileList[] = file.list();
 		for (String path : fileList) {
-			File eachFile = new File(pathFile + path);
+			File eachFile = new File(pathFile + "/" + path);
 			if (eachFile.isDirectory()) {
 				// 递归
 				scanPackage(packageStr + "." + eachFile.getName());
@@ -163,21 +191,19 @@ public class DispatcherServlet extends HttpServlet {
 		String url = req.getRequestURI();// 请求路径
 		String context = req.getContextPath();// 项目路径
 		String path = url.replace(context, "");
-		Method method = (Method) handerMap.get(path);
-		if (null == method) {
+		if (!this.handerMap.containsKey(url)) {
+			resp.getWriter().write("<h1>404 NOT FOUND!<h1>");
 			return;
 		}
+		Method method = (Method) handerMap.get(path);
 		Object isntance = instanceMap.get(path.split("/")[1]);
 		try {
 			// 解析参数
 			Object args[] = hand(req, resp, method);
 			method.invoke(isntance, args);
-		} catch (IllegalAccessException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
+			resp.getWriter().write("500 error:" + Arrays.toString(e.getStackTrace()));
 		}
 	}
 

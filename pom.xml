@@ -10,6 +10,8 @@
 		<module>demo-springmvc</module>
 		<module>demo-thread</module>
 		<module>demo-design</module>
+		<module>demo-rabbitmq</module>
+		<module>demo-spring</module>
 	</modules>
 	<dependencies>
 		<dependency>
