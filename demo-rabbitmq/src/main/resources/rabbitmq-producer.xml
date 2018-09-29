@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+      http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+      http://www.springframework.org/schema/rabbit
+      http://www.springframework.org/schema/rabbit/spring-rabbit-1.0.xsd">
+
+	<!--配置connection-factory，指定连接rabbit server参数 -->
+	<rabbit:connection-factory id="connectionFactory"
+		username="guest" password="guest" host="10.7.35.228" port="5672"
+		virtual-host="/" />
+
+	<!--通过指定下面的admin信息，当前producer中的exchange和queue会在rabbitmq服务器上自动生成 -->
+	<rabbit:admin connection-factory="connectionFactory" />
+
+	<!--定义queue -->
+	<rabbit:queue id="demo.rabbitmq.spring_queue" name="demo.rabbitmq.spring_queue"
+		durable="true" auto-delete="false" exclusive="false" />
+
+	<!-- 定义direct exchange，绑定demo.rabbitmq.spring_queue queue -->
+	<rabbit:direct-exchange name="spring_Change"
+		durable="true" auto-delete="false">
+		<rabbit:bindings>
+			<!-- routingkey=hello -->
+			<rabbit:binding queue="demo.rabbitmq.spring_queue" key="hello"></rabbit:binding>
+		</rabbit:bindings>
+	</rabbit:direct-exchange>
+
+	<!--定义rabbit template用于数据的接收和发送 -->
+	<rabbit:template id="amqpTemplate" connection-factory="connectionFactory"
+		exchange="spring_Change" reply-timeout="10000" message-converter="jsonMessageConverter" />
+
+	<!-- 消息对象json转换类 -->
+	<bean id="jsonMessageConverter"
+		class="org.springframework.amqp.support.converter.Jackson2JsonMessageConverter" />
+
+</beans>
