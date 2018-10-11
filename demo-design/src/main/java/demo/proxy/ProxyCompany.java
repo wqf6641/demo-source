@@ -20,7 +20,7 @@ public class ProxyCompany implements InvocationHandler {
 
 	public ProxyCompany(Object factory) {
 		super();
-		this.factory = factory;
+		this.factory = factory;//接收业务实现类对象参数
 	}
 
 	public void setFactory(Object factory) {
@@ -28,6 +28,8 @@ public class ProxyCompany implements InvocationHandler {
 	}
 
 	public Object getProxy() {
+		//接收业务实现类对象参数
+		//创建代理对象时，需要传递该业务类的类加载器（用来获取业务实现类的元数据，在包装方法是调用真正的业务方法）、接口、handler实现类
 		Object obj = Proxy.newProxyInstance(factory.getClass().getClassLoader(), factory.getClass().getInterfaces(),
 				this);
 		return obj;
