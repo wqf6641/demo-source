@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class name="demo.pojo.TbSceneryTickets" table="TB_SCENERY_TICKETS" lazy="false">	
+        <id name="id" type="java.lang.Integer">
+            <column name="ID" length="32"/>
+            <generator class="identity"/>  
+        </id>
+		
+		<property name="sceneryId" type="java.lang.Integer" column="SCENERY_ID"
+			length="32" />
+		<property name="typeName" type="java.lang.String" column="TYPE_NAME"
+			length="100" />
+	</class>
+</hibernate-mapping>
