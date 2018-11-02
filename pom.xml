@@ -12,6 +12,8 @@
 		<module>demo-design</module>
 		<module>demo-rabbitmq</module>
 		<module>demo-spring</module>
+		<module>demo-hibernate</module>
+		<module>demo-springboot</module>
 	</modules>
 	<dependencies>
 		<dependency>
