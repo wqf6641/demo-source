@@ -12,6 +12,8 @@
 		<module>demo-design</module>
 		<module>demo-rabbitmq</module>
 		<module>demo-spring</module>
+		<module>demo-disruptor</module>
+		<module>demo-web</module>
 	</modules>
 	<dependencies>
 		<dependency>
