@@ -14,6 +14,7 @@
 		<module>demo-spring</module>
 		<module>demo-hibernate</module>
 		<module>demo-springboot</module>
+		<module>demo-log4j2</module>
 	</modules>
 	<dependencies>
 		<dependency>
